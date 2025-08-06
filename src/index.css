@@ -7,6 +7,12 @@
   body {
     @apply bg-gray-50 text-gray-900 font-sans;
   }
+  
+  /* Fix for deprecated color-adjust warning */
+  * {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
 }
 
 @layer components {
