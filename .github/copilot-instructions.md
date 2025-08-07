@@ -7,7 +7,7 @@ This is a React + Vite frontend application for managing fleet driver trips and 
 
 ## Key Features
 - Trip entry with platform-wise earnings (Uber, InDrive, Yatri, Rapido, Offline)
-- Automatic salary calculations (65% driver, 35% owner)
+- Automatic salary calculations (driver percentage based)
 - Driver salary tracking and payment status
 - Cash flow management with cashier integration
 - WhatsApp-shareable trip summaries
@@ -38,8 +38,7 @@ This is a React + Vite frontend application for managing fleet driver trips and 
 
 ## Key Calculations
 - Total Earnings = Platform Earnings - Commissions - Other Expenses
-- Driver Salary = 65% of Total Earnings
-- Owner Share = 35% of Total Earnings
+- Driver Salary = Driver percentage of Total Earnings
 - Cash in Hand = (Cash Collected + Online Payments) - Fuel - (Driver Salary if taken)
 
 ## Data Integration

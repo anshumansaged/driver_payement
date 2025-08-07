@@ -39,14 +39,13 @@ const DriverReport = ({ trips = [] }) => {
     }
 
     const csvData = [
-      ['Date', 'Driver', 'Total KM', 'Total Earnings', 'Driver Salary', 'Owner Share', 'Cash in Hand', 'Salary Taken', 'Cash to Cashier'],
+      ['Date', 'Driver', 'Total KM', 'Total Earnings', 'Driver Salary', 'Cash in Hand', 'Salary Taken', 'Cash to Cashier'],
       ...filteredTrips.map(trip => [
         trip.date,
         trip.driverName,
         trip.totalKm,
         trip.calculations?.totalEarnings || 0,
         trip.calculations?.driverSalary || 0,
-        trip.calculations?.ownerShare || 0,
         trip.calculations?.cashInHand || 0,
         trip.driverTookSalary ? 'Yes' : 'No',
         trip.cashGivenToCashier ? 'Yes' : 'No'

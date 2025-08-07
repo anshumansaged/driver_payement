@@ -1,10 +1,14 @@
-// Calculation utilities for trip data with automation
-import { drivers } from '../data/drivers';
+// Simple version without imports to test basic exports
+const drivers = [
+  { id: 1, name: "Vivek Bali", salaryPercentage: 30 },
+  { id: 2, name: "Ramesh Kumar", salaryPercentage: 35 },
+  { id: 3, name: "Suresh Singh", salaryPercentage: 35 },
+  { id: 4, name: "Mukesh Sharma", salaryPercentage: 35 }
+];
 
-// Get driver salary percentage (default 35%, 30% for Vivek)
 export const getDriverSalaryPercentage = (driverName) => {
   const driver = drivers.find(d => d.name === driverName);
-  return driver ? driver.salaryPercentage : 35; // Default 35% if driver not found
+  return driver ? driver.salaryPercentage : 35;
 };
 
 export const calculateTripEarnings = (tripData) => {
@@ -16,33 +20,23 @@ export const calculateTripEarnings = (tripData) => {
     otherExpenses = 0,
     fuelEntries = [],
     onlinePayments = 0,
-    totalCashCollected = 0, // Use automated total cash instead of cashCollected
+    totalCashCollected = 0,
     driverTookSalary = false
   } = tripData;
 
-  // Calculate total platform earnings
   const totalPlatformEarnings = Object.values(platformEarnings).reduce((sum, earning) => sum + (parseFloat(earning) || 0), 0);
-  
-  // Calculate total cash collected from platform inputs
   const calculatedTotalCash = Object.values(platformCash).reduce((sum, cash) => sum + (parseFloat(cash) || 0), 0);
-  
-  // Calculate total commissions (automated)
   const totalCommissions = Object.values(commissions).reduce((sum, commission) => sum + (parseFloat(commission) || 0), 0);
-  
-  // Calculate total fuel expenses
   const totalFuelExpenses = fuelEntries.reduce((sum, fuel) => sum + (parseFloat(fuel.amount) || 0), 0);
   
-  // Calculate total earnings (platform earnings - commissions - other expenses - fuel)
   const totalEarnings = totalPlatformEarnings - totalCommissions - (parseFloat(otherExpenses) || 0) - totalFuelExpenses;
   
-  // Get driver-specific salary percentage
   const driverPercentage = getDriverSalaryPercentage(driverName);
+  const ownerPercentage = 100 - driverPercentage;
   
-  // Calculate driver salary based on their percentage
   const driverSalary = totalEarnings * (driverPercentage / 100);
+  const ownerShare = totalEarnings * (ownerPercentage / 100);
   
-  // Calculate cash in hand using automated logic:
-  // Cash in Hand = Total Cash Collected - Online Payments - Driver Salary (if taken)
   const totalCash = calculatedTotalCash || parseFloat(totalCashCollected) || 0;
   const online = parseFloat(onlinePayments) || 0;
   const cashInHand = totalCash - online - (driverTookSalary ? driverSalary : 0);
@@ -54,12 +48,39 @@ export const calculateTripEarnings = (tripData) => {
     totalFuelExpenses: parseFloat(totalFuelExpenses.toFixed(2)),
     totalEarnings: parseFloat(totalEarnings.toFixed(2)),
     driverSalary: parseFloat(driverSalary.toFixed(2)),
-    cashInHand: parseFloat(Math.max(0, cashInHand).toFixed(2)), // Ensure non-negative
-    driverPercentage
+    ownerShare: parseFloat(ownerShare.toFixed(2)),
+    cashInHand: parseFloat(Math.max(0, cashInHand).toFixed(2)),
+    driverPercentage,
+    ownerPercentage
   };
 };
 
-// Format currency for display
+export const validateTripData = (tripData) => {
+  const errors = {};
+  
+  if (!tripData.date) {
+    errors.date = 'Date is required';
+  }
+  
+  if (!tripData.driverName) {
+    errors.driverName = 'Driver name is required';
+  }
+  
+  if (!tripData.totalKm || tripData.totalKm <= 0) {
+    errors.totalKm = 'Total kilometers must be greater than 0';
+  }
+  
+  const hasEarnings = Object.values(tripData.platformEarnings || {}).some(earning => parseFloat(earning) > 0);
+  if (!hasEarnings) {
+    errors.earnings = 'At least one platform earning is required';
+  }
+  
+  return {
+    isValid: Object.keys(errors).length === 0,
+    errors
+  };
+};
+
 export const formatCurrency = (amount) => {
   return new Intl.NumberFormat('en-IN', {
     style: 'currency',
@@ -68,7 +89,6 @@ export const formatCurrency = (amount) => {
   }).format(amount || 0);
 };
 
-// Format date for display
 export const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString('en-IN', {
     year: 'numeric',
@@ -77,7 +97,6 @@ export const formatDate = (dateString) => {
   });
 };
 
-// Format date for WhatsApp sharing
 export const formatDateForWhatsApp = (dateString) => {
   return new Date(dateString).toLocaleDateString('en-IN', {
     day: '2-digit',
@@ -86,7 +105,6 @@ export const formatDateForWhatsApp = (dateString) => {
   });
 };
 
-// Generate WhatsApp shareable trip summary
 export const generateWhatsAppSummary = (tripData) => {
   const calculations = calculateTripEarnings(tripData);
   const date = formatDateForWhatsApp(tripData.date);
@@ -96,7 +114,6 @@ export const generateWhatsAppSummary = (tripData) => {
   summary += `🚗 *Km Driven:* ${tripData.totalKm} km (${tripData.startKm || 'N/A'} → ${tripData.endKm || 'N/A'})\n`;
   summary += `💰 *Total Earnings:* ₹${calculations.totalEarnings.toFixed(2)}\n\n`;
   
-  // Platform earnings breakdown
   summary += `📊 *Platform Earnings:*\n`;
   Object.entries(tripData.platformEarnings || {}).forEach(([platform, amount]) => {
     if (amount > 0) {
@@ -107,7 +124,6 @@ export const generateWhatsAppSummary = (tripData) => {
   
   summary += `\n💳 *Online:* ₹${parseFloat(tripData.onlinePayments || 0).toFixed(2)} | 💵 *Total Cash:* ₹${calculations.totalCashCollected.toFixed(2)}\n`;
   
-  // Fuel expenses with type details
   if (tripData.fuelEntries && tripData.fuelEntries.length > 0) {
     summary += `⛽ *Fuel Expenses:*\n`;
     tripData.fuelEntries.forEach((fuel) => {
@@ -116,7 +132,6 @@ export const generateWhatsAppSummary = (tripData) => {
     summary += `   *Total Fuel:* ₹${calculations.totalFuelExpenses.toFixed(2)}\n`;
   }
   
-  // Add commissions if any (automated)
   if (calculations.totalCommissions > 0) {
     let commissionText = '\n💼 *Commissions:*';
     if (tripData.hasUberCommission) {
@@ -140,14 +155,11 @@ export const generateWhatsAppSummary = (tripData) => {
     summary += ` ⏳ *Pending*`;
   }
   
-  // Cash flow
   summary += `\n💸 *Cash in Driver Hand:* ₹${calculations.cashInHand.toFixed(2)}`;
   
   if (tripData.cashGivenToCashier && tripData.cashToCashier) {
     summary += `\n🧑‍💼 *Cash to Cashier:* ₹${parseFloat(tripData.cashToCashier).toFixed(2)} ✅`;
   }
-  
-  // Don't show owner share in summary as requested
   
   summary += `\n\n📱 *Generated by Fleet Manager Dashboard*`;
   summary += `\n⚡ *Automated Calculations Active*`;
@@ -155,19 +167,16 @@ export const generateWhatsAppSummary = (tripData) => {
   return summary;
 };
 
-// Calculate monthly driver salary summary
 export const calculateMonthlySalarySummary = (driverName, trips = []) => {
   const currentDate = new Date();
   const currentMonth = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
   
-  // Filter trips for current month
   const monthlyTrips = trips.filter(trip => {
     const tripDate = new Date(trip.date);
     return tripDate.getMonth() === currentMonth && tripDate.getFullYear() === currentYear;
   });
   
-  // Calculate total earnings and salary for the month
   let totalEarningsThisMonth = 0;
   let totalSalaryEarned = 0;
   let totalSalaryPaid = 0;
@@ -190,44 +199,4 @@ export const calculateMonthlySalarySummary = (driverName, trips = []) => {
     salaryRemaining: parseFloat(salaryRemaining.toFixed(2)),
     tripsCount: monthlyTrips.length
   };
-};
-
-// Generate trip validation
-export const validateTripData = (tripData) => {
-  const errors = {};
-  
-  if (!tripData.date) {
-    errors.date = 'Date is required';
-  }
-  
-  if (!tripData.driverName) {
-    errors.driverName = 'Driver name is required';
-  }
-  
-  if (!tripData.totalKm || tripData.totalKm <= 0) {
-    errors.totalKm = 'Total kilometers must be greater than 0';
-  }
-  
-  // Check if at least one platform earning is provided
-  const hasEarnings = Object.values(tripData.platformEarnings || {}).some(earning => parseFloat(earning) > 0);
-  if (!hasEarnings) {
-    errors.earnings = 'At least one platform earning is required';
-  }
-  
-  return {
-    isValid: Object.keys(errors).length === 0,
-    errors
-  };
-};
-
-// Export utility functions
-export default {
-  calculateTripEarnings,
-  formatCurrency,
-  formatDate,
-  formatDateForWhatsApp,
-  generateWhatsAppSummary,
-  calculateMonthlySalarySummary,
-  validateTripData,
-  getDriverSalaryPercentage
 };

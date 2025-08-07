@@ -39,7 +39,6 @@ export const createTripData = (tripData) => {
     cash_to_cashier: tripData.cashToCashier || 0,
     total_earnings: tripData.calculations?.totalEarnings || 0,
     driver_salary: tripData.calculations?.driverSalary || 0,
-    owner_share: tripData.calculations?.ownerShare || 0,
     cash_in_hand: tripData.calculations?.cashInHand || 0,
     created_at: new Date().toISOString()
   };

@@ -53,14 +53,12 @@ const DailySummaryCards = ({ trips, selectedDate }) => {
     return {
       totalEarnings: acc.totalEarnings + (calc.totalEarnings || 0),
       totalDriverSalary: acc.totalDriverSalary + (calc.driverSalary || 0),
-      totalOwnerShare: acc.totalOwnerShare + (calc.ownerShare || 0),
       totalCash: acc.totalCash + (calc.cashInHand || 0),
       tripsCount: acc.tripsCount + 1
     };
   }, {
     totalEarnings: 0,
     totalDriverSalary: 0,
-    totalOwnerShare: 0,
     totalCash: 0,
     tripsCount: 0
   });
@@ -78,7 +76,7 @@ const DailySummaryCards = ({ trips, selectedDate }) => {
       <SummaryCard
         title="Driver Salary"
         value={formatCurrency(dailyStats.totalDriverSalary)}
-        subtitle="65% of earnings"
+        subtitle="Driver earnings total"
         icon={Users}
         color="blue"
       />

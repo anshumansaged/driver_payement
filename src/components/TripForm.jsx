@@ -3,6 +3,7 @@ import { Calendar, User, MapPin, DollarSign, Fuel, CreditCard, Wallet, Calculato
 import { drivers, platforms, commissionTypes } from '../data/drivers';
 import { calculateTripEarnings, validateTripData, generateWhatsAppSummary } from '../utils/calculations';
 import sheetDBService from '../services/sheetdb';
+import CalculationBreakdown from './CalculationBreakdown';
 
 const TripForm = ({ onTripAdded }) => {
   const [formData, setFormData] = useState({
@@ -767,34 +768,39 @@ const TripForm = ({ onTripAdded }) => {
 
         {/* Live Calculations */}
         {calculations && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Calculator className="w-5 h-5 text-blue-600" />
-              <h3 className="text-lg font-semibold text-blue-900">Live Calculations</h3>
+          <>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Calculator className="w-5 h-5 text-blue-600" />
+                <h3 className="text-lg font-semibold text-blue-900">Live Calculations</h3>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                <div>
+                  <span className="text-gray-600">Total Earnings:</span>
+                  <div className="font-semibold text-lg">₹{calculations.totalEarnings.toFixed(2)}</div>
+                </div>
+                <div>
+                  <span className="text-gray-600">Driver Salary ({calculations.driverPercentage}%):</span>
+                  <div className="font-semibold text-lg text-green-600">₹{calculations.driverSalary.toFixed(2)}</div>
+                </div>
+                <div>
+                  <span className="text-gray-600">Cash in Hand:</span>
+                  {(() => {
+                    const cashInHand = formData.cashGivenToCashier && formData.cashToCashier && 
+                      parseFloat(formData.cashToCashier) >= calculations.cashInHand 
+                      ? 0 
+                      : calculations.cashInHand - parseFloat(formData.cashToCashier || 0);
+                    return (
+                      <div className="font-semibold text-lg text-orange-600">₹{Math.max(0, cashInHand).toFixed(2)}</div>
+                    );
+                  })()}
+                </div>
+              </div>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-              <div>
-                <span className="text-gray-600">Total Earnings:</span>
-                <div className="font-semibold text-lg">₹{calculations.totalEarnings.toFixed(2)}</div>
-              </div>
-              <div>
-                <span className="text-gray-600">Driver Salary (65%):</span>
-                <div className="font-semibold text-lg text-green-600">₹{calculations.driverSalary.toFixed(2)}</div>
-              </div>
-              <div>
-                <span className="text-gray-600">Cash in Hand:</span>
-                {(() => {
-                  const cashInHand = formData.cashGivenToCashier && formData.cashToCashier && 
-                    parseFloat(formData.cashToCashier) >= calculations.cashInHand 
-                    ? 0 
-                    : calculations.cashInHand - parseFloat(formData.cashToCashier || 0);
-                  return (
-                    <div className="font-semibold text-lg text-orange-600">₹{Math.max(0, cashInHand).toFixed(2)}</div>
-                  );
-                })()}
-              </div>
-            </div>
-          </div>
+
+            {/* Detailed Calculation Breakdown */}
+            <CalculationBreakdown tripData={formData} calculations={calculations} />
+          </>
         )}
 
         {/* Submit Button */}
