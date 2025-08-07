@@ -1,15 +1,12 @@
 // Calculation utilities for trip data with automation
-import { drivers } from '../data/drivers';
 
-// Get driver salary percentage (default 35%, 30% for Vivek)
-export const getDriverSalaryPercentage = (driverName) => {
-  const driver = drivers.find(d => d.name === driverName);
-  return driver ? driver.salaryPercentage : 35; // Default 35% if driver not found
+// Get driver salary percentage (35% for all drivers)
+export const getDriverSalaryPercentage = () => {
+  return 35; // Same percentage for all drivers
 };
 
 export const calculateTripEarnings = (tripData) => {
   const {
-    driverName,
     platformEarnings = {},
     platformCash = {},
     commissions = {},
@@ -32,20 +29,22 @@ export const calculateTripEarnings = (tripData) => {
   // Calculate total fuel expenses
   const totalFuelExpenses = fuelEntries.reduce((sum, fuel) => sum + (parseFloat(fuel.amount) || 0), 0);
   
-  // Calculate total earnings (platform earnings - commissions - other expenses - fuel)
-  const totalEarnings = totalPlatformEarnings - totalCommissions - (parseFloat(otherExpenses) || 0) - totalFuelExpenses;
+  // Calculate total earnings (platform earnings - commissions ONLY)
+  // Fuel and other expenses are covered by owner, not deducted from earnings
+  const totalEarnings = totalPlatformEarnings - totalCommissions;
   
-  // Get driver-specific salary percentage
-  const driverPercentage = getDriverSalaryPercentage(driverName);
+  // Get driver salary percentage (same for all drivers)
+  const driverPercentage = getDriverSalaryPercentage();
   
-  // Calculate driver salary based on their percentage
+  // Calculate driver salary based on percentage
   const driverSalary = totalEarnings * (driverPercentage / 100);
   
   // Calculate cash in hand using automated logic:
-  // Cash in Hand = Total Cash Collected - Online Payments - Driver Salary (if taken)
+  // Cash in Hand = Total Cash Collected - Online Payments - Fuel - Other Expenses - Driver Salary (if taken)
   const totalCash = calculatedTotalCash || parseFloat(totalCashCollected) || 0;
   const online = parseFloat(onlinePayments) || 0;
-  const cashInHand = totalCash - online - (driverTookSalary ? driverSalary : 0);
+  const expenses = totalFuelExpenses + (parseFloat(otherExpenses) || 0);
+  const cashInHand = totalCash - online - expenses - (driverTookSalary ? driverSalary : 0);
 
   return {
     totalPlatformEarnings: parseFloat(totalPlatformEarnings.toFixed(2)),

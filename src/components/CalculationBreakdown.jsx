@@ -91,7 +91,7 @@ const CalculationBreakdown = ({ tripData, calculations }) => {
         <div className="bg-green-50 border border-green-200 rounded p-3 max-w-xs">
           <div className="text-sm text-green-700">Driver Share</div>
           <div className="text-lg font-semibold text-green-800">
-            {calculations.driverPercentage}% = ₹{calculations.driverSalary.toFixed(2)}
+            35% = ₹{calculations.driverSalary.toFixed(2)}
           </div>
         </div>
       </div>

@@ -780,7 +780,7 @@ const TripForm = ({ onTripAdded }) => {
                   <div className="font-semibold text-lg">₹{calculations.totalEarnings.toFixed(2)}</div>
                 </div>
                 <div>
-                  <span className="text-gray-600">Driver Salary ({calculations.driverPercentage}%):</span>
+                  <span className="text-gray-600">Driver Salary (35%):</span>
                   <div className="font-semibold text-lg text-green-600">₹{calculations.driverSalary.toFixed(2)}</div>
                 </div>
                 <div>
